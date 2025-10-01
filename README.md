@@ -7,6 +7,34 @@ A web platform to answer your stock performance queries.
 - There are **several tools for gathering this data**, such as Yahoo Finance, Alpha Vantage, and web scrapers.  
 - **Relevance:** A large portion of the population participates in trading at some level.  
 
+## Our Two-Pronged Approach
+
+We structure our solution into **two complementary layers**:
+
+### 1. Long-Term Predictions
+- **Objective:** Estimate the returns of a stock after a chosen time horizon (e.g., 3 months, 6 months, 1 year).  
+- **Method:**  
+  - Analyze historical data alongside broader parameters (earnings growth, policy, macroeconomic variables).  
+  - Build models that outperform a random walk baseline.  
+  - Pipeline:  
+    1. Predict future values of influencing parameters (e.g., revenue growth, volatility).  
+    2. Use these parameter forecasts to compute expected stock returns.  
+- **Example Models:** Bayesian probabilistic forecasting for parameter prediction, followed by return estimation.  
+
+### 2. Short-Term Predictions + Recommendation System
+- **Objective:** Provide actionable guidance (buy/hold/avoid/short) based on near-term stock behavior.  
+- **Method:**  
+  - Core predictor model outputs **numeric values** such as:  
+    - Future return estimates (e.g., next week % change).  
+    - Risk measures and volatility forecasts.  
+    - Probability distributions of possible outcomes.  
+  - Recommendation system applies **business logic** to translate numeric values into actions:  
+    - *Predicted return > risk-adjusted threshold → Mark as “Buy Candidate”*.  
+    - *Expected downside > cutoff → Mark as Avoid/Short*.  
+  - Additional layers: filtering, prioritization, and categorization across multiple stocks.  
+
+This layered approach ensures that **long-term investors** receive parameter-driven return estimates, while **short-term traders** get a recommendation engine tuned for actionable signals.  
+
 ## What We Plan to Do
 1. **Data Collection:**  
    - Gather historical stock data using Yahoo Finance datasets and the `yfinance` Python library.
