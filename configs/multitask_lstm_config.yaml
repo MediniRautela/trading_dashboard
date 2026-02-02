@@ -1,0 +1,34 @@
+experiment_name: "intraday_multitask_lstm"
+
+data:
+  symbols: ["AAPL", "MSFT", "AMZN"]
+  timeframe: "15min"
+  window_length: 64
+  prediction_horizon: 1
+  train_start: "2020-01-01"
+  train_end: "2023-12-31"
+  val_start: "2024-01-01"
+  val_end: "2024-06-30"
+  test_start: "2024-07-01"
+  test_end: "2024-12-31"
+  data_dir: "data"
+
+training:
+  batch_size: 256
+  num_epochs: 30
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  device: "cuda"
+
+model:
+  type: "lstm"       # "cnn" or "lstm"
+  num_features: 5
+  num_classes: 2
+  # LSTM-specific
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.3
+  bidirectional: false
+  # CNN-specific (ignored when type=lstm)
+  conv_channels: [32, 64, 128]
+  kernel_size: 3

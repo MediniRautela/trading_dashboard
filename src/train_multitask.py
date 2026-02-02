@@ -10,6 +10,7 @@ import yaml
 
 from src.data.preprocessing import load_npz
 from src.models.multitask_cnn import MultiTaskCNN
+from src.models.multitask_lstm import MultiTaskLSTM
 
 
 def load_config(path: str) -> dict:
@@ -153,13 +154,26 @@ def main(config_path: str) -> None:
     train_loader = make_dataloader(train_npz, batch_size=batch_size, shuffle=True)
     val_loader = make_dataloader(val_npz, batch_size=batch_size, shuffle=False)
 
-    model = MultiTaskCNN(
-        num_features=model_cfg["num_features"],
-        num_classes=model_cfg["num_classes"],
-        conv_channels=tuple(model_cfg["conv_channels"]),
-        kernel_size=model_cfg["kernel_size"],
-        dropout=model_cfg["dropout"],
-    ).to(device)
+    model_type = model_cfg.get("type", "cnn").lower()
+    if model_type == "lstm":
+        model = MultiTaskLSTM(
+            num_features=model_cfg["num_features"],
+            num_classes=model_cfg["num_classes"],
+            hidden_size=int(model_cfg.get("hidden_size", 128)),
+            num_layers=int(model_cfg.get("num_layers", 2)),
+            dropout=float(model_cfg.get("dropout", 0.3)),
+            bidirectional=bool(model_cfg.get("bidirectional", False)),
+        ).to(device)
+        ckpt_name = "best_multitask_lstm.pt"
+    else:
+        model = MultiTaskCNN(
+            num_features=model_cfg["num_features"],
+            num_classes=model_cfg["num_classes"],
+            conv_channels=tuple(model_cfg.get("conv_channels", [32, 64, 128])),
+            kernel_size=int(model_cfg.get("kernel_size", 3)),
+            dropout=float(model_cfg.get("dropout", 0.3)),
+        ).to(device)
+        ckpt_name = "best_multitask_cnn.pt"
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
@@ -186,7 +200,7 @@ def main(config_path: str) -> None:
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            ckpt_path = os.path.join("checkpoints", "best_multitask_cnn.pt")
+            ckpt_path = os.path.join("checkpoints", ckpt_name)
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
