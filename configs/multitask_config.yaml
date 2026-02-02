@@ -1,0 +1,28 @@
+experiment_name: "intraday_multitask_cnn"
+
+data:
+  symbols: ["AAPL", "MSFT", "AMZN"]
+  timeframe: "15min"
+  window_length: 64           # number of 15-min bars per sample
+  prediction_horizon: 1       # number of bars ahead for target
+  train_start: "2020-01-01"
+  train_end: "2023-12-31"
+  val_start: "2024-01-01"
+  val_end: "2024-06-30"
+  test_start: "2024-07-01"
+  test_end: "2024-12-31"
+  data_dir: "data"
+
+training:
+  batch_size: 256
+  num_epochs: 30
+  learning_rate: 1e-3
+  weight_decay: 1e-4
+  device: "cuda"      # "cuda" or "cpu"
+
+model:
+  num_features: 5      # OHLCV
+  num_classes: 2       # up / down
+  conv_channels: [32, 64, 128]
+  kernel_size: 3
+  dropout: 0.3
