@@ -1,0 +1,336 @@
+================================================================================
+              TRADING DASHBOARD FRONTEND - IMPLEMENTATION PLAN
+================================================================================
+
+PROJECT OVERVIEW
+--------------------------------------------------------------------------------
+Building a modern, real-time trading dashboard frontend that:
+- Displays ML model predictions from the existing CNN/LSTM backend
+- Integrates real-time data from yfinance
+- Provides paper trading functionality
+- Includes user authentication
+
+================================================================================
+                          TECH STACK RECOMMENDATION
+================================================================================
+
+OPTION A: Next.js + FastAPI (RECOMMENDED - Production Grade)
+--------------------------------------------------------------------------------
+Frontend: Next.js 14 (React)
+  - App Router for modern routing
+  - Server-side rendering for SEO and performance
+  - Real-time updates via WebSockets/Server-Sent Events
+  - TailwindCSS + shadcn/ui for premium UI components
+  - Recharts/TradingView for financial charts
+  - React Query for state management
+
+Backend API: FastAPI (Python)
+  - Wraps existing ML inference code
+  - WebSocket support for real-time data streaming
+  - JWT-based authentication
+  - SQLite/PostgreSQL for user data & paper trading records
+
+Authentication: NextAuth.js + JWT
+  - Social login (Google, GitHub)
+  - Email/password authentication
+  - Session management
+
+Why Next.js?
+  ✓ Production-ready React framework
+  ✓ Built-in API routes
+  ✓ Excellent TypeScript support
+  ✓ Great developer experience
+  ✓ Easy deployment (Vercel, self-hosted)
+
+--------------------------------------------------------------------------------
+
+OPTION B: Vite + React + FastAPI (Lightweight Alternative)
+--------------------------------------------------------------------------------
+Frontend: Vite + React 18
+  - Faster development builds
+  - Simpler setup than Next.js
+  - React Router for navigation
+  - Same UI libraries as Option A
+
+Backend: Same FastAPI setup
+
+When to choose this?
+  ✓ Simpler project requirements
+  ✓ Don't need SSR/SEO
+  ✓ Faster initial development
+
+================================================================================
+                          PROJECT STRUCTURE
+================================================================================
+
+trading_dashboard/
+├── backend/                    # NEW - FastAPI Backend
+│   ├── main.py                 # FastAPI app entry point
+│   ├── routers/
+│   │   ├── auth.py             # Authentication endpoints
+│   │   ├── trading.py          # Paper trading endpoints
+│   │   ├── predictions.py      # ML prediction endpoints
+│   │   └── portfolio.py        # Portfolio management
+│   ├── models/
+│   │   ├── user.py             # User database model
+│   │   ├── trade.py            # Trade records model
+│   │   └── portfolio.py        # Portfolio model
+│   ├── services/
+│   │   ├── ml_service.py       # Wraps existing inference.py
+│   │   ├── data_service.py     # Real-time data streaming
+│   │   └── paper_trading.py    # Paper trading logic
+│   ├── database.py             # Database connection
+│   ├── auth.py                 # JWT authentication logic
+│   └── requirements.txt
+│
+├── frontend/                   # NEW - Next.js Frontend
+│   ├── app/
+│   │   ├── layout.tsx          # Root layout
+│   │   ├── page.tsx            # Landing page
+│   │   ├── (auth)/
+│   │   │   ├── login/page.tsx
+│   │   │   └── register/page.tsx
+│   │   ├── dashboard/
+│   │   │   ├── layout.tsx      # Dashboard layout
+│   │   │   ├── page.tsx        # Main dashboard
+│   │   │   ├── trade/page.tsx  # Paper trading interface
+│   │   │   ├── portfolio/page.tsx
+│   │   │   └── predictions/page.tsx
+│   │   └── api/                # Next.js API routes (optional)
+│   ├── components/
+│   │   ├── ui/                 # Reusable UI components
+│   │   ├── charts/             # Trading charts
+│   │   ├── trading/            # Trading-specific components
+│   │   └── auth/               # Auth components
+│   ├── lib/
+│   │   ├── api.ts              # API client
+│   │   ├── auth.ts             # Auth utilities
+│   │   └── utils.ts
+│   ├── hooks/                  # Custom React hooks
+│   ├── styles/
+│   └── package.json
+│
+├── src/                        # EXISTING - ML Models
+├── configs/                    # EXISTING
+├── checkpoints/                # EXISTING
+└── app.py                      # EXISTING - Streamlit (can keep for reference)
+
+================================================================================
+                          FEATURE BREAKDOWN
+================================================================================
+
+PHASE 1: Backend API (Days 1-2)
+--------------------------------------------------------------------------------
+1. FastAPI Setup
+   - Project structure
+   - Environment configuration
+   - CORS setup for frontend
+
+2. ML Integration Endpoints
+   - GET /api/predictions/{symbol}
+   - GET /api/stocks (available symbols)
+   - GET /api/price-data/{symbol} (historical data)
+   - WebSocket /ws/live-data/{symbol} (real-time updates)
+
+3. Database Setup
+   - SQLite for development (PostgreSQL for production)
+   - SQLAlchemy ORM models
+   - Alembic migrations
+
+PHASE 2: Authentication (Days 2-3)
+--------------------------------------------------------------------------------
+1. User Model
+   - id, email, password_hash, created_at
+   - paper_balance (default $100,000)
+
+2. Auth Endpoints
+   - POST /api/auth/register
+   - POST /api/auth/login
+   - POST /api/auth/logout
+   - GET /api/auth/me
+
+3. JWT Token Flow
+   - Access token (15 min expiry)
+   - Refresh token (7 days expiry)
+   - Secure HTTP-only cookies
+
+PHASE 3: Paper Trading Module (Days 3-4)
+--------------------------------------------------------------------------------
+1. Trading Models
+   - positions: user_id, symbol, quantity, avg_price, current_value
+   - transactions: user_id, symbol, type, quantity, price, timestamp
+
+2. Trading Endpoints
+   - POST /api/trade/buy
+   - POST /api/trade/sell
+   - GET /api/trade/positions
+   - GET /api/trade/history
+
+3. Trading Logic
+   - Real-time price fetching
+   - P&L calculation
+   - Position management
+   - Balance validation
+
+PHASE 4: Frontend - Core UI (Days 4-6)
+--------------------------------------------------------------------------------
+1. Next.js Setup
+   - Project initialization
+   - TailwindCSS configuration
+   - shadcn/ui components
+   - Dark mode support
+
+2. Authentication Pages
+   - Login page (glassmorphism design)
+   - Register page
+   - Protected routes
+
+3. Dashboard Layout
+   - Sidebar navigation
+   - Header with user info
+   - Responsive design
+
+PHASE 5: Frontend - Trading Features (Days 6-8)
+--------------------------------------------------------------------------------
+1. Main Dashboard
+   - Stock selector
+   - Real-time price display
+   - ML prediction cards
+   - Quick trade buttons
+
+2. Trading Charts
+   - Candlestick chart (TradingView widget or Recharts)
+   - Volume overlay
+   - Technical indicators preview
+   - Prediction markers
+
+3. Paper Trading Interface
+   - Buy/Sell form
+   - Order confirmation modal
+   - Position list
+   - P&L display
+
+4. Portfolio View
+   - Holdings table
+   - Transaction history
+   - Performance metrics
+   - Portfolio chart
+
+PHASE 6: Real-time Features (Days 8-9)
+--------------------------------------------------------------------------------
+1. WebSocket Integration
+   - Live price updates
+   - Real-time P&L updates
+   - Prediction refresh
+
+2. Notifications
+   - Trade confirmation toasts
+   - Price alerts (optional)
+   - Prediction signals
+
+PHASE 7: Polish & Testing (Days 9-10)
+--------------------------------------------------------------------------------
+1. UI Polish
+   - Animations and transitions
+   - Loading states
+   - Error handling
+   - Mobile responsiveness
+
+2. Testing
+   - API endpoint testing
+   - Frontend component tests
+   - Integration testing
+
+================================================================================
+                          UI DESIGN SPECIFICATIONS
+================================================================================
+
+COLOR PALETTE
+--------------------------------------------------------------------------------
+Primary: #6366F1 (Indigo)
+Success: #10B981 (Emerald - for gains)
+Danger:  #EF4444 (Red - for losses)
+Background: #0F172A (Slate 900)
+Surface: #1E293B (Slate 800)
+Text: #F1F5F9 (Slate 100)
+Accent: #8B5CF6 (Violet)
+
+DESIGN PRINCIPLES
+--------------------------------------------------------------------------------
+1. Dark mode by default (traders prefer dark themes)
+2. Glassmorphism for cards and modals
+3. Subtle gradients for visual depth
+4. Micro-animations for interactions
+5. Clear visual hierarchy
+6. Instant feedback on all actions
+
+KEY COMPONENTS
+--------------------------------------------------------------------------------
+- Stock Ticker Display (animated prices)
+- Prediction Card (probability gauge)
+- Trading Widget (buy/sell form)
+- Portfolio Chart (area/line chart)
+- Transaction Table (with filters)
+- Real-time Price Feed
+
+================================================================================
+                          EXECUTION TIMELINE
+================================================================================
+
+Week 1: Backend + Auth
+  Day 1-2: FastAPI setup, ML integration endpoints
+  Day 3: Authentication system
+  Day 4: Paper trading backend
+
+Week 2: Frontend Core
+  Day 5-6: Next.js setup, auth pages, dashboard layout
+  Day 7-8: Trading charts, paper trading UI
+  Day 9: Portfolio view, real-time features
+  Day 10: Polish, testing, documentation
+
+================================================================================
+                          IMMEDIATE NEXT STEPS
+================================================================================
+
+1. CONFIRM TECH STACK
+   - Option A (Next.js + FastAPI) - RECOMMENDED
+   - Option B (Vite + React + FastAPI) - Alternative
+
+2. DESIGN PREFERENCES
+   - Dark mode only or light/dark toggle?
+   - Any specific UI inspirations?
+   - Specific chart library preference?
+
+3. AUTHENTICATION REQUIREMENTS
+   - Email/password only?
+   - Social login (Google, GitHub)?
+   - User profile features needed?
+
+4. PAPER TRADING FEATURES
+   - Starting balance ($100,000)?
+   - Market orders only or limit orders too?
+   - Short selling allowed?
+   - Position sizing limits?
+
+================================================================================
+                          QUESTIONS FOR YOU
+================================================================================
+
+1. Do you want to keep the existing Streamlit app.py as a separate tool, or 
+   should we integrate everything into the new frontend?
+
+2. Are there any specific trading dashboard designs you'd like me to reference?
+
+3. Should the paper trading persist across sessions (database) or reset?
+
+4. What's the expected number of users? (affects database choice)
+
+5. Will your friend's ML backend run as a separate service, or should we 
+   integrate it directly into the FastAPI backend?
+
+================================================================================
+
+Looking forward to your feedback! Once you confirm the direction, I'll start
+with the implementation.
+
+================================================================================

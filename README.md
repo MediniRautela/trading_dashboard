@@ -1,56 +1,184 @@
-# Trading Dashboard
+# ARTHA Trading Dashboard
 
-A web platform to answer your stock performance queries.
+A professional-grade AI-powered trading dashboard with real-time ML predictions, paper trading, and portfolio analytics.
 
-## Why This Project?
-- Stock and option data is **abundantly available** (historical prices, technical indicators).  
-- There are **several tools for gathering this data**, such as Yahoo Finance, Alpha Vantage, and web scrapers.  
-- **Relevance:** A large portion of the population participates in trading at some level.  
+![ARTHA Dashboard](docs/dashboard-preview.png)
 
-## Our Two-Pronged Approach
+## 🚀 Features
 
-We structure our solution into **two complementary layers**:
+### Core Features
+- **ML Predictions** - Real-time stock predictions using trained CNN models
+- **Paper Trading** - Practice trading with $100,000 virtual balance
+- **Portfolio Analytics** - Track P&L, positions, and performance metrics
+- **Risk Heatmap** - Visualize portfolio correlation and diversification
 
-### 1. Long-Term Predictions
-- **Objective:** Estimate the returns of a stock after a chosen time horizon (e.g., 3 months, 6 months, 1 year).  
-- **Method:**  
-  - Analyze historical data alongside broader parameters (earnings growth, policy, macroeconomic variables).  
-  - Build models that outperform a random walk baseline.  
-  - Pipeline:  
-    1. Predict future values of influencing parameters (e.g., revenue growth, volatility).  
-    2. Use these parameter forecasts to compute expected stock returns.  
-- **Example Models:** Bayesian probabilistic forecasting for parameter prediction, followed by return estimation.  
+### Power Features
+- **AI Market Context ("The Why Widget")** - AI-generated explanations for market movements
+- **Command Palette (⌘K)** - Quick navigation and instant trades
+- **Gamified Leaderboard** - Compete with other traders
+- **Real-time Data** - Live price updates and WebSocket streaming
 
-### 2. Short-Term Predictions + Recommendation System
-- **Objective:** Provide actionable guidance (buy/hold/avoid/short) based on near-term stock behavior.  
-- **Method:**  
-  - Core predictor model outputs **numeric values** such as:  
-    - Future return estimates (e.g., next week % change).  
-    - Risk measures and volatility forecasts.  
-    - Probability distributions of possible outcomes.  
-  - Recommendation system applies **business logic** to translate numeric values into actions:  
-    - *Predicted return > risk-adjusted threshold → Mark as “Buy Candidate”*.  
-    - *Expected downside > cutoff → Mark as Avoid/Short*.  
-  - Additional layers: filtering, prioritization, and categorization across multiple stocks.  
+## 📂 Project Structure
 
-This layered approach ensures that **long-term investors** receive parameter-driven return estimates, while **short-term traders** get a recommendation engine tuned for actionable signals.  
+```
+trading_dashboard/
+├── backend/                  # FastAPI Backend
+│   ├── main.py              # App entry point
+│   ├── config.py            # Environment configuration
+│   ├── database.py          # SQLAlchemy setup
+│   ├── auth.py              # JWT authentication
+│   ├── dependencies.py      # FastAPI dependencies
+│   ├── models/              # SQLAlchemy models
+│   ├── schemas/             # Pydantic schemas
+│   ├── repositories/        # Data access layer
+│   ├── services/            # Business logic
+│   └── routers/             # API endpoints
+│
+├── frontend/                 # Next.js Frontend
+│   ├── app/                 # App Router pages
+│   ├── components/          # React components
+│   │   ├── layout/         # Header, Sidebar, CommandPalette
+│   │   ├── ui/             # StatsCard, Toaster
+│   │   └── features/       # PositionsTable, PredictionPanel, etc.
+│   ├── hooks/              # TanStack Query hooks
+│   ├── lib/                # API client, utilities
+│   └── types/              # TypeScript interfaces
+│
+├── src/                      # ML Model Code
+│   ├── inference.py         # Model inference
+│   └── data/               # Data preprocessing
+│
+└── checkpoints/             # Trained model files
+```
 
-## What We Plan to Do
-1. **Data Collection:**  
-   - Gather historical stock data using Yahoo Finance datasets and the `yfinance` Python library.
+## 🛠️ Tech Stack
 
-2. **Exploratory Data Analysis (EDA) & Preprocessing:**  
-   - Understand data distributions, detect anomalies, and clean/normalize data.
+### Backend
+- **FastAPI** - High-performance async web framework
+- **SQLAlchemy 2.0** - Async ORM with SQLite/PostgreSQL
+- **Pydantic v2** - Data validation and settings management
+- **JWT (python-jose)** - Secure authentication
+- **SlowAPI** - Rate limiting
 
-3. **Feature Engineering:**  
-   - Reduce dimensionality and extract useful information like moving averages, RSI, MACD, etc.
+### Frontend
+- **Next.js 14** - React framework with App Router
+- **TailwindCSS** - Utility-first styling
+- **TanStack Query** - Data fetching and caching
+- **Radix UI** - Accessible components
+- **CMDK** - Command palette
 
-4. **Data Analysis & Modeling:**  
-   - Apply regression, LSTM, or other models to understand trends and make predictions.
+## 🚦 Getting Started
 
-5. **Training & Validation:**  
-   - Evaluate model accuracy and performance using relevant metrics.
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- npm or yarn
 
-6. **User Interface (Web-based):**  
-   - Users can enter stock symbols and parameter values.  
-   - Dashboard displays insights, charts, and predictions interactively.
+### Backend Setup
+
+```bash
+# Navigate to backend
+cd backend
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the server
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The API will be available at http://localhost:8000
+- API Docs: http://localhost:8000/api/docs
+
+### Frontend Setup
+
+```bash
+# Navigate to frontend
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+```
+
+The app will be available at http://localhost:3000
+
+## 🔑 Environment Variables
+
+### Backend (.env)
+```env
+ENVIRONMENT=development
+DEBUG=true
+DATABASE_URL=sqlite+aiosqlite:///./artha.db
+JWT_SECRET_KEY=your-secret-key-here
+CORS_ORIGINS=["http://localhost:3000"]
+INITIAL_PAPER_BALANCE=100000.0
+MODEL_CHECKPOINT_PATH=checkpoints/best_multitask_cnn.pt
+```
+
+### Frontend (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+## 📡 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login and get tokens
+- `POST /api/auth/refresh` - Refresh access token
+- `GET /api/auth/me` - Get current user
+
+### Predictions
+- `GET /api/stocks` - List available stocks
+- `GET /api/predictions/{symbol}` - Get ML prediction
+- `GET /api/market-context/{symbol}` - Get AI sentiment
+- `GET /api/live-price/{symbol}` - Get current price
+
+### Trading
+- `POST /api/trade/buy` - Execute buy order
+- `POST /api/trade/sell` - Execute sell order
+- `POST /api/trade/quick` - Quick trade command
+- `GET /api/trade/positions` - Get positions
+- `GET /api/trade/history` - Get trade history
+
+### Portfolio
+- `GET /api/portfolio/summary` - Portfolio overview
+- `GET /api/portfolio/analysis` - Correlation matrix
+- `GET /api/portfolio/performance` - Performance metrics
+
+### Community
+- `GET /api/community/leaderboard` - Trader rankings
+
+## 🎨 Design System
+
+The dashboard uses a professional finance terminal theme:
+
+- **Background**: Dark grays (#0a0a0a, #141414, #1f1f1f)
+- **Accent**: Blue (#3b82f6)
+- **Success**: Green (#22c55e)
+- **Danger**: Red (#ef4444)
+- **Typography**: Inter (UI), JetBrains Mono (numbers)
+
+## 🔒 Security
+
+- JWT authentication with token refresh
+- bcrypt password hashing
+- Rate limiting on auth endpoints
+- CORS whitelisting
+- SQL injection prevention via ORM
+- XSS protection in React
+
+## 📜 License
+
+This project is for educational purposes only. Paper trading with virtual money only.
+
+---
+
+Built with ❤️ for the ARTHA Stock Prediction project.
